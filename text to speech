@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Text to Speech Converter</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      width: 90%;
+      max-width: 500px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.2em;
+      margin-bottom: 25px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1em;
+      margin-bottom: 20px;
+      resize: none;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 1em;
+      margin-bottom: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 1.1em;
+      font-weight: bold;
+      background: linear-gradient(to right, #ff6a00, #ee0979);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Text to Speech Converter</h1>
+    <textarea id="text-input" placeholder="Enter your text here..."></textarea>
+    <div class="controls">
+      <label for="rate">Speech Rate:</label>
+      <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1" />
+    </div>
+    <button id="speak-btn">🔊 Speak</button>
+  </div>
+  <script>
+    const textInput = document.getElementById('text-input');
+    const rate = document.getElementById('rate');
+    const speakBtn = document.getElementById('speak-btn');
+
+    speakBtn.addEventListener('click', () => {
+      const text = textInput.value.trim();
+      if (!text) return alert('Please enter some text!');
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = parseFloat(rate.value);
+      speechSynthesis.speak(utterance);
+    });
+  </script>
+</body>
+</html>
