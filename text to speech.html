@@ -3,112 +3,286 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Text to Speech Converter</title>
+  <title>Text to Speech</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
+    :root {
+      --bg-light: #f0f0f0;
+      --bg-dark: #1e1e2f;
+      --text-light: #111;
+      --text-dark: #fff;
+      --accent: #ff6a00;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
       margin: 0;
       padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      color: #fff;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.light-mode {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-dark);
     }
 
     .container {
       background: rgba(255, 255, 255, 0.1);
-      padding: 30px;
+      backdrop-filter: blur(12px);
       border-radius: 20px;
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      width: 90%;
-      max-width: 500px;
+      padding: 30px;
+      width: 95%;
+      max-width: 800px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
     }
 
     h1 {
       text-align: center;
-      font-size: 2.2em;
+      font-size: 2.5em;
       margin-bottom: 25px;
+      color: var(--accent);
     }
 
     textarea {
       width: 100%;
-      height: 120px;
+      height: 150px;
       padding: 15px;
       border: none;
       border-radius: 10px;
-      font-size: 1em;
-      margin-bottom: 20px;
+      font-size: 1.1em;
       resize: none;
-      font-family: 'Poppins', sans-serif;
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 0.9em;
+      margin-top: 5px;
+      color: #888;
     }
 
     .controls {
-      margin-bottom: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
     }
 
     label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 5px;
+      font-weight: bold;
     }
 
-    input[type="range"] {
+    input[type="range"], select {
       width: 100%;
-      padding: 10px;
+      padding: 5px;
       border-radius: 10px;
       border: none;
       font-size: 1em;
-      margin-bottom: 15px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: center;
     }
 
     button {
-      width: 100%;
-      padding: 14px;
-      font-size: 1.1em;
+      flex: 1 1 40%;
+      min-width: 140px;
+      padding: 12px;
+      font-size: 1em;
       font-weight: bold;
-      background: linear-gradient(to right, #ff6a00, #ee0979);
+      background: linear-gradient(135deg, #ff6a00, #ee0979);
       color: white;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .top-bar input[type="file"] {
+      display: none;
+    }
+
+    .file-label {
+      background: #333;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .theme-toggle {
+      font-size: 0.9em;
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .slider-value {
+      font-size: 0.8em;
+      text-align: right;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Text to Speech Converter</h1>
-    <textarea id="text-input" placeholder="Enter your text here..."></textarea>
-    <div class="controls">
-      <label for="rate">Speech Rate:</label>
-      <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1" />
+    <div class="top-bar">
+      <label class="file-label" for="file-upload">📄 Upload Text File</label>
+      <input type="file" id="file-upload" accept=".txt" />
+      <button class="theme-toggle" id="theme-btn">🌙 Toggle Theme</button>
     </div>
-    <button id="speak-btn">🔊 Speak</button>
+    <h1>Text to Speech</h1>
+    <textarea id="text-input" placeholder="Type or upload your text..."></textarea>
+    <div class="char-count" id="char-count">0 characters</div>
+
+    <div class="controls">
+      <div>
+        <label for="voice">Voice</label>
+        <select id="voice"></select>
+      </div>
+      <div>
+        <label for="rate">Rate <span class="slider-value" id="rate-val">1</span></label>
+        <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1" />
+      </div>
+      <div>
+        <label for="pitch">Pitch <span class="slider-value" id="pitch-val">1</span></label>
+        <input type="range" id="pitch" min="0" max="2" step="0.1" value="1" />
+      </div>
+      <div>
+        <label for="volume">Volume <span class="slider-value" id="volume-val">1</span></label>
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="1" />
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button id="speak-btn">🗣 Speak</button>
+      <button id="pause-btn">⏸ Pause</button>
+      <button id="resume-btn">▶ Resume</button>
+      <button id="stop-btn">⏹ Stop</button>
+    </div>
   </div>
+
   <script>
     const textInput = document.getElementById('text-input');
-    const rate = document.getElementById('rate');
-    const speakBtn = document.getElementById('speak-btn');
+    const charCount = document.getElementById('char-count');
+    const voiceSelect = document.getElementById('voice');
+    const rateInput = document.getElementById('rate');
+    const pitchInput = document.getElementById('pitch');
+    const volumeInput = document.getElementById('volume');
+    const rateVal = document.getElementById('rate-val');
+    const pitchVal = document.getElementById('pitch-val');
+    const volumeVal = document.getElementById('volume-val');
 
-    speakBtn.addEventListener('click', () => {
+    const speakBtn = document.getElementById('speak-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const resumeBtn = document.getElementById('resume-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const fileUpload = document.getElementById('file-upload');
+    const themeBtn = document.getElementById('theme-btn');
+
+    const synth = window.speechSynthesis;
+    let voices = [];
+
+    function populateVoices() {
+      voices = synth.getVoices();
+      voiceSelect.innerHTML = voices.map(v => 
+        `<option value="${v.name}">${v.name} (${v.lang})</option>`).join('');
+    }
+
+    synth.onvoiceschanged = populateVoices;
+    populateVoices();
+
+    function speak() {
       const text = textInput.value.trim();
-      if (!text) return alert('Please enter some text!');
+      if (!text) return alert("Please enter some text.");
+      if (synth.speaking) return alert("Already speaking!");
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = parseFloat(rate.value);
-      speechSynthesis.speak(utterance);
+      utterance.voice = voices.find(v => v.name === voiceSelect.value);
+      utterance.rate = parseFloat(rateInput.value);
+      utterance.pitch = parseFloat(pitchInput.value);
+      utterance.volume = parseFloat(volumeInput.value);
+
+      speakBtn.disabled = true;
+      utterance.onend = () => speakBtn.disabled = false;
+      utterance.onerror = () => {
+        alert("An error occurred.");
+        speakBtn.disabled = false;
+      };
+
+      synth.speak(utterance);
+    }
+
+    rateInput.addEventListener('input', () => rateVal.textContent = rateInput.value);
+    pitchInput.addEventListener('input', () => pitchVal.textContent = pitchInput.value);
+    volumeInput.addEventListener('input', () => volumeVal.textContent = volumeInput.value);
+
+    textInput.addEventListener('input', () => {
+      charCount.textContent = `${textInput.value.length} characters`;
+      localStorage.setItem("tts-text", textInput.value);
+    });
+
+    // Load from localStorage
+    window.addEventListener("load", () => {
+      const saved = localStorage.getItem("tts-text");
+      if (saved) textInput.value = saved;
+      charCount.textContent = `${textInput.value.length} characters`;
+
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      document.body.classList.add(savedTheme + "-mode");
+    });
+
+    speakBtn.addEventListener("click", speak);
+    pauseBtn.addEventListener("click", () => synth.pause());
+    resumeBtn.addEventListener("click", () => synth.resume());
+    stopBtn.addEventListener("click", () => synth.cancel());
+
+    fileUpload.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file && file.type === "text/plain") {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          textInput.value = e.target.result;
+          charCount.textContent = `${textInput.value.length} characters`;
+        };
+        reader.readAsText(file);
+      } else {
+        alert("Please upload a valid .txt file.");
+      }
+    });
+
+    themeBtn.addEventListener("click", () => {
+      const isDark = document.body.classList.contains("dark-mode");
+      document.body.classList.toggle("dark-mode", !isDark);
+      document.body.classList.toggle("light-mode", isDark);
+      localStorage.setItem("theme", isDark ? "light" : "dark");
     });
   </script>
 </body>
